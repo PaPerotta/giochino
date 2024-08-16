@@ -39,6 +39,38 @@ class Enemy(pygame.sprite.Sprite):
         if self.rect.right<0:
             self.kill()
 
+
+class Explosion(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super(Explosion, self).__init__()
+        self.images = []
+        for num in range(1, 6):
+            img = pygame.image.load(f"img/exp{num}.png")
+            img = pygame.transform.scale(img, (100, 100)).convert()
+            self.images.append(img)
+        self.index = 0
+        self.surf = self.images[self.index]
+        self.rect = self.surf.get_rect()
+        self.rect.center = [x, y]
+        self.counter = 0
+
+    def update(self):
+        explosion_speed = 2
+        #update explosion animation
+        self.counter += 1
+
+        if self.counter >= explosion_speed and self.index < len(self.images) - 1:
+            self.counter = 0
+            self.index += 1
+            self.surf = self.images[self.index]
+
+        #if the animation is complete, reset animation index
+        if self.index >= len(self.images) - 1 and self.counter >= explosion_speed:
+            self.index = 0
+            self.counter = 0
+            self.kill()
+
+
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super(Bullet,self).__init__()
@@ -105,12 +137,14 @@ player=Player()
 # - enemies is used for collision detection and position updates
 # - all_sprites is used for rendering
 enemies=pygame.sprite.Group()
+explosion_group = pygame.sprite.Group()
 bullets=pygame.sprite.Group()
 all_sprites=pygame.sprite.Group()
 all_sprites.add(player)
 
 # Variable to keep the main loop running
 running = True
+collision_timer = 0
 
 # Setup the clock for a decent framerate
 clock=pygame.time.Clock()
@@ -146,6 +180,7 @@ while running:
     pressed_keys=pygame.key.get_pressed() #restituisce un dict con tutti i tasti premuti nella coda degli eventi)
     player.update(pressed_keys)
     enemies.update()
+    explosion_group.update()
     bullets.update()
 
     # Fill the screen with black
@@ -157,8 +192,19 @@ while running:
     
     # check if any enemy had collided with the player
     if pygame.sprite.spritecollideany(player,enemies):
+        pos = player.rect.center
         player.kill()
-        running=False
+        if collision_timer == 0:
+            explosion = Explosion(pos[0], pos[1])
+            explosion_group.add(explosion)
+            all_sprites.add(explosion)
+            collision_timer = 20
+
+    if collision_timer > 0:
+        collision_timer -= 1
+    
+    if collision_timer == 1:
+        running = False
     for bullet in bullets:
         killed_enemies = pygame.sprite.spritecollide(bullet, enemies,1)
         score+= len(killed_enemies)*100
