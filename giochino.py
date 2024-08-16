@@ -17,6 +17,7 @@ from pygame.locals import (
 
 # INIZIALIZZO
 pygame.init()
+pygame.font.init()
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self):
@@ -69,6 +70,10 @@ class Player(pygame.sprite.Sprite):
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
+# Definisco variabili per gestire lo score
+score = 0
+score_increment = 1
+
 # CREO LO SCREEN
 # crea una surface di 800x600
 # NB - la doppia parentesi indica una LISTA
@@ -94,8 +99,12 @@ running = True
 # Setup the clock for a decent framerate
 clock=pygame.time.Clock()
 
+# Set up the font object
+font = pygame.font.Font(None, 24)
+
 # Main loop
 while running:
+    score += score_increment
     # Look at every event in the queue
     for event in pygame.event.get():
         # Did the user hit a key?
@@ -128,17 +137,9 @@ while running:
         player.kill()
         running=False
 
-    # # Create a surface and pass in a tuple containing its length and width
-    # surf = pygame.Surface((50, 50))
-
-    # # Give the surface a color to separate it from the background
-    # surf.fill((0, 0, 0))
-    # rect = surf.get_rect()
-
-    # surf_center = (
-    #     (SCREEN_WIDTH-surf.get_width())/2,
-    #     (SCREEN_HEIGHT-surf.get_height())/2
-    # )
+    # Draw the score to the screen
+    score_text = font.render(f'Score: {score}', True, (255, 255, 255))
+    screen.blit(score_text, (700, 10))
     
     # # This line says "Draw surf onto the screen at the center"
     # screen.blit(player.surf,player.rect) #COSA copiare e DOVE copiarla (il suo punto TopLeft)
