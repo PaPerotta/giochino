@@ -40,7 +40,7 @@ class Enemy(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super(Player, self).__init__()
-        self.surf=pygame.image.load("player.png").convert()
+        self.surf=pygame.image.load("img/player.png").convert()
         self.surf.set_colorkey((255,255,255),RLEACCEL)
         # self.surf=pygame.Surface((75,25))
         # self.surf.fill((255,255,255))
