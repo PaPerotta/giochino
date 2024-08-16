@@ -171,10 +171,11 @@ while running:
     if pygame.sprite.spritecollideany(player,enemies):
         pos = player.rect.center
         player.kill()
-        explosion = Explosion(pos[0], pos[1])
-        explosion_group.add(explosion)
-        all_sprites.add(explosion)
-        collision_timer = 20
+        if collision_timer == 0:
+            explosion = Explosion(pos[0], pos[1])
+            explosion_group.add(explosion)
+            all_sprites.add(explosion)
+            collision_timer = 20
 
     if collision_timer > 0:
         collision_timer -= 1
