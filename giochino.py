@@ -10,6 +10,8 @@ from pygame.locals import (
     K_LEFT,
     K_RIGHT,
     K_ESCAPE,
+    K_LCTRL,
+    K_SPACE,
     KEYDOWN,
     QUIT
 )
@@ -37,14 +39,27 @@ class Enemy(pygame.sprite.Sprite):
         if self.rect.right<0:
             self.kill()
 
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super(Bullet,self).__init__()
+        self.surf = pygame.image.load("img/bullet_tr.png").convert()
+        self.surf.set_colorkey((255,255,255), RLEACCEL)
+        self.rect = self.surf.get_rect()
+        self.rect.center = [x,y]
+        self.speed=15
+
+    def update(self):
+        self.rect.move_ip(self.speed,0)
+        if self.rect.right>SCREEN_WIDTH:
+            self.kill()
+
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super(Player, self).__init__()
-        self.surf=pygame.image.load("player.png").convert()
+        self.surf=pygame.image.load("img/player.png").convert()
         self.surf.set_colorkey((255,255,255),RLEACCEL)
-        # self.surf=pygame.Surface((75,25))
-        # self.surf.fill((255,255,255))
         self.rect=self.surf.get_rect()
+
 
     def update(self,pressed_keys):
         if pressed_keys[K_UP]:
@@ -90,6 +105,7 @@ player=Player()
 # - enemies is used for collision detection and position updates
 # - all_sprites is used for rendering
 enemies=pygame.sprite.Group()
+bullets=pygame.sprite.Group()
 all_sprites=pygame.sprite.Group()
 all_sprites.add(player)
 
@@ -112,6 +128,12 @@ while running:
             # Was it the Escape key? If so, stop the loop.
             if event.key == K_ESCAPE:
                 running = False
+            elif event.key == K_LCTRL or event.key == K_SPACE:
+                # shoot!
+                pos = player.rect.midright
+                bullet = Bullet(pos[0], pos[1])
+                bullets.add(bullet)
+                all_sprites.add(bullet)
         # Did the user click the window close button? If so, stop the loop.
         elif event.type == QUIT:
             running = False
@@ -124,6 +146,7 @@ while running:
     pressed_keys=pygame.key.get_pressed() #restituisce un dict con tutti i tasti premuti nella coda degli eventi)
     player.update(pressed_keys)
     enemies.update()
+    bullets.update()
 
     # Fill the screen with black
     screen.fill((0,0,0))
@@ -136,6 +159,10 @@ while running:
     if pygame.sprite.spritecollideany(player,enemies):
         player.kill()
         running=False
+    for bullet in bullets:
+        killed_enemies = pygame.sprite.spritecollide(bullet, enemies,1)
+        score+= len(killed_enemies)*100
+
 
     # Draw the score to the screen
     score_text = font.render(f'Score: {score}', True, (255, 255, 255))
@@ -145,4 +172,3 @@ while running:
     # screen.blit(player.surf,player.rect) #COSA copiare e DOVE copiarla (il suo punto TopLeft)
     pygame.display.flip()
     clock.tick(30)
-
